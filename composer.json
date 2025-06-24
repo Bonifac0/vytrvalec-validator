@@ -1,0 +1,15 @@
+{
+  "name": "bonifac0/greeter-lib",
+  "description": "A simple PHP library that greets people.",
+  "type": "library",
+  "autoload": {
+    "psr-4": {
+      "bonifac0\\Greeter\\": "src/"
+    }
+  },
+  "require": {},
+  "require-dev": {
+    "phpunit/phpunit": "^10"
+  },
+  "license": "MIT"
+}
