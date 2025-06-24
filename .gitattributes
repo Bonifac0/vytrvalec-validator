@@ -1,0 +1,8 @@
+/tests/                 export-ignore
+/.gitignore            export-ignore
+/.phpunit.result.cache export-ignore
+/.editorconfig         export-ignore
+/.vscode/              export-ignore
+/.idea/                export-ignore
+composer.lock          export-ignore
+phpunit.xml            export-ignore
