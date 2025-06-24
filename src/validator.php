@@ -1,8 +1,8 @@
 <?php
 
-namespace bonifac0\validatornamespace;
+namespace bonifac0\validator;
 
-class Validatorclass
+class Validator
 {
     public static function validate(int $value): bool
     {
