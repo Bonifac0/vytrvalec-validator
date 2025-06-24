@@ -1,5 +1,5 @@
 {
-  "name": "bonifac0/greeter-lib",
+  "name": "bonifac0/vytrvalec-validator",
   "description": "A simple PHP library that greets people.",
   "type": "library",
   "autoload": {
