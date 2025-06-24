@@ -4,7 +4,9 @@
   "type": "library",
   "autoload": {
     "psr-4": {
-      "bonifac0\\Greeter\\": "src/"
+      "bonifac0\\Greeter\\": "src/",
+      "bonifac0\\validatornamespace\\": "src/"
+
     }
   },
   "require": {},
