@@ -1,12 +1,15 @@
 {
   "name": "bonifac0/vytrvalec-validator",
-  "description": "A simple PHP library that greets people.",
+  "description": "PHP library containing LLM validator.",
   "type": "library",
   "autoload": {
     "psr-4": {
-      "bonifac0\\Greeter\\": "src/",
-      "bonifac0\\validator\\": "src/"
-
+      "bonifac0\\VytrvalecValidator\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
     }
   },
   "require": {},

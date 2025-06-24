@@ -1,12 +1,11 @@
-# Greeter Library
+# Validator Library
 
-A simple PHP library that greets people by name.
+A PHP library containing LLM validator.
 
 ## Usage
 
 ```php
-use bonifac0\Greeter\Greeter;
+use bonifac0\VytrvalecValidator\Validator;
 
-echo Greeter::sayHello("Jan");
-// Output: Hello, Jan!
 ```
+testing: vendor/bin/phpunit tests
