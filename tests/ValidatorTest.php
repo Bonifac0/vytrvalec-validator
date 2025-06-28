@@ -2,7 +2,6 @@
 
 use PHPUnit\Framework\TestCase;
 
-#require_once __DIR__ . '/../src/Validator.php';
 use bonifac0\VytrvalecValidator\Validator;
 
 
@@ -24,18 +23,6 @@ class ValidatorTest extends TestCase
         $this->assertFileExists($this->imagePath, "Test image file missing.");
     }
 
-    public function testRunInferenceReturnsValidStructure()
-    {
-        try {
-            $data = $this->invokePrivateMethod($this->validator, 'runInference', [$this->imagePath]);
-            $this->assertIsArray($data);
-            $this->assertArrayHasKey('valid_rules', $data);
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
-            $this->markTestSkipped("API returned 401 Unauthorized – check your credentials.txt");
-        }
-    }
-
-
     public function testFullValidationReturnsExpectedFormat()
     {
         [$isValid, $errorCode] = $this->validator->validate(
@@ -49,6 +36,14 @@ class ValidatorTest extends TestCase
         $this->assertIsInt($errorCode);
     }
 
+    public function testRunInferenceReturnsValidStructure()
+    {
+        $data = $this->invokePrivateMethod($this->validator, 'runInference', [$this->imagePath]);
+
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('distance', $data);
+        $this->assertArrayHasKey('valid_rules', $data);
+    }
 
     public function testExtractDataReturnsFields()
     {

@@ -1,12 +1,11 @@
 <?php
 namespace bonifac0\VytrvalecValidator;
 
-use GuzzleHttp\Client as HttpClient;
-use GuzzleHttp\Exception\RequestException;
+use bonifac0\OllamaClient\OllamaClient;
 
 class Validator
 {
-    private HttpClient $client;
+    private OllamaClient $client;
     private string $errorLogPath;
     private array $rules;
     private array $outputSchema;
@@ -18,14 +17,15 @@ class Validator
         string $outputSchemaFile = "output_schema.json"
     ) {
         $lines = file($credFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        $this->client = new HttpClient([
-            'base_uri' => trim($lines[0]),
-            'auth' => [trim($lines[1]), trim($lines[2])],
-        ]);
+        $this->client = new OllamaClient(trim($lines[0]), [trim($lines[1]), trim($lines[2]), 'digest']);
 
         $this->errorLogPath = $errorLogPath;
         $this->rules = json_decode(file_get_contents($rulesFile), true);
         $this->outputSchema = json_decode(file_get_contents($outputSchemaFile), true);
+
+        if (!is_dir(dirname($errorLogPath))) {
+            mkdir(dirname($errorLogPath), 0777, true);
+        }
     }
 
     public function validate(string $imgPath, int $distance, int $elevation, bool $makelogs = true, string $logDir = "logs"): array
@@ -40,11 +40,10 @@ class Validator
             }
             file_put_contents($outputPath, json_encode($inferenceOut, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         }
-
-        return $this->accept($inferenceOut ?? [], $distance, $elevation, true);
+        return $this->accept($inferenceOut, $distance, $elevation, true);
     }
 
-    private function runInference(string $imagePath): ?array
+    private function runInference(string $imagePath): array
     {
         try {
             $ruleJson = $this->assessRuleValidity($imagePath);
@@ -53,70 +52,76 @@ class Validator
             }
         } catch (\Throwable $e) {
             file_put_contents($this->errorLogPath, "Rule check error: " . $e->getMessage() . PHP_EOL, FILE_APPEND);
-            return null;
+            return ['valid_rules' => false,];
         }
 
         try {
             return array_merge($ruleJson, $this->extractData($imagePath));
         } catch (\Throwable $e) {
             file_put_contents($this->errorLogPath, "Data extraction error: " . $e->getMessage() . PHP_EOL, FILE_APPEND);
-            return null;
+            return ['valid_rules' => false,];
         }
     }
 
     private function assessRuleValidity(string $imagePath, string $model = "gemma3:27b"): array
     {
         $image = file_get_contents($imagePath);
-
-        $response = $this->client->post('/chat', [
-            'json' => [
-                'model' => $model,
-                'messages' => [
-                    ['role' => 'user', 'content' => $this->rules['rule_definition_prompt']],
-                    ['role' => 'assistant', 'content' => $this->rules['assistant_prompt']],
-                    ['role' => 'user', 'content' => "Ok. Tady máš obrázek, vyhodnoť validitu obrázku podle pravidel poté odpověz jako JSON.", 'images' => [base64_encode($image)]]
-                ],
-                'format' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'valid_rules' => ['type' => 'boolean'],
-                        'reason_rules' => ['type' => 'string']
-                    ],
-                    'required' => ['valid_rules']
+        $payload = [
+            'model' => $model,
+            'messages' => [
+                ['role' => 'user', 'content' => $this->rules['rule_definition_prompt']],
+                ['role' => 'assistant', 'content' => $this->rules['assistant_prompt']],
+                [
+                    'role' => 'user',
+                    'content' => "Ok. Tady máš obrázek, vyhodnoť validitu obrázku podle pravidel poté odpověz jako JSON.",
+                    'images' => [base64_encode($image)]
                 ]
+            ],
+            'format' => [
+                'type' => 'object',
+                'properties' => [
+                    'valid_rules' => ['type' => 'boolean'],
+                    'reason_rules' => ['type' => 'string']
+                ],
+                'required' => ['valid_rules']
             ]
-        ]);
-
-        return json_decode($response->getBody(), true);
+        ];
+        return $this->client->chat($payload);
     }
 
     private function extractData(string $imagePath, string $model = "qwen2.5vl"): array
     {
         $image = file_get_contents($imagePath);
+        $payload = [
+            'model' => $model,
+            'messages' => [
+                [
+                    'role' => 'user',
+                    'content' => $this->rules['prompt_data'],
+                    'images' => [base64_encode($image)]
+                ]
+            ],
+            'format' => $this->outputSchema
+        ];
 
-        $response = $this->client->post('/chat', [
-            'json' => [
-                'model' => $model,
-                'messages' => [
-                    ['role' => 'user', 'content' => $this->rules['prompt_data'], 'images' => [base64_encode($image)]]
-                ],
-                'format' => $this->outputSchema
-            ]
-        ]);
-
-        return json_decode($response->getBody(), true);
+        return $this->client->chat($payload);
     }
 
     private function accept(array $ins, int $dist, int $ele, bool $loosEle = false): array
     {
         try {
-            if (!$ins['valid_rules'])
+            if (!$ins['valid_rules']) {
                 return [false, 1];
-            if (!$this->acceptDistance($ins, $dist))
+            }
+            if (!$this->acceptDistance($ins, $dist)) {
                 return [false, 2];
-            if (!$this->acceptElevation($ins, $ele, $loosEle))
+            }
+            if (!$this->acceptElevation($ins, $ele, $loosEle)) {
                 return [false, 3];
+            }
+
             return [true, 0];
+
         } catch (\Throwable $e) {
             return [false, 4];
         }

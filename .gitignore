@@ -1,6 +1,8 @@
 ## Custom
 composer.lock
 credentials.txt
+/errors/
+/logs/
 
 
 

@@ -4,6 +4,7 @@
   "type": "library",
   "autoload": {
     "psr-4": {
+      "bonifac0\\OllamaClient\\": "src/",
       "bonifac0\\VytrvalecValidator\\": "src/"
     }
   },
