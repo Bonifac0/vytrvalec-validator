@@ -12,7 +12,9 @@
       "Tests\\": "tests/"
     }
   },
-  "require": {},
+  "require": {
+    "guzzlehttp/guzzle": "^7.8"
+  },
   "require-dev": {
     "phpunit/phpunit": "^10"
   },

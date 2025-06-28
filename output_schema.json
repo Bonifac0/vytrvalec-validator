@@ -1,0 +1,107 @@
+{
+  "title": "ActivityRecord",
+  "type": "object",
+  "properties": {
+    "distance": {
+      "title": "Distance",
+      "type": "integer"
+    },
+    "elevation": {
+      "title": "Elevation",
+      "anyOf": [
+        { "type": "integer" },
+        { "type": "null" }
+      ]
+    },
+    "date": {
+      "title": "Date",
+      "anyOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    },
+    "time": {
+      "title": "Time",
+      "anyOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    },
+    "activity_lenght": {
+      "title": "Activity Lenght",
+      "anyOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    },
+    "type_of_excercise": {
+      "title": "Type Of Excercise",
+      "type": "string",
+      "enum": ["Walk", "Run", "Other", "Unknown"]
+    },
+    "calories": {
+      "title": "Calories",
+      "anyOf": [
+        { "type": "integer" },
+        { "type": "null" }
+      ]
+    },
+    "steps": {
+      "title": "Steps",
+      "anyOf": [
+        { "type": "integer" },
+        { "type": "null" }
+      ]
+    },
+    "average_speed": {
+      "title": "Average Speed",
+      "anyOf": [
+        { "type": "number" },
+        { "type": "null" }
+      ]
+    },
+    "max_speed": {
+      "title": "Max Speed",
+      "anyOf": [
+        { "type": "number" },
+        { "type": "null" }
+      ]
+    },
+    "other": {
+      "title": "Other",
+      "anyOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ],
+      "default": null
+    },
+    "reason": {
+      "title": "Reason",
+      "anyOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    },
+    "application": {
+      "title": "Application",
+      "anyOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    }
+  },
+  "required": [
+    "distance",
+    "elevation",
+    "date",
+    "time",
+    "activity_lenght",
+    "type_of_excercise",
+    "calories",
+    "steps",
+    "average_speed",
+    "max_speed",
+    "reason",
+    "application"
+  ]
+}
