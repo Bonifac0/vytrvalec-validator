@@ -1,7 +1,6 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-
 use bonifac0\VytrvalecValidator\Validator;
 
 
@@ -12,12 +11,7 @@ class ValidatorTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->validator = new Validator(
-            __DIR__ . '/../credentials.txt',
-            __DIR__ . '/../errors/errors_test.txt',
-            __DIR__ . '/../rules.json',
-            __DIR__ . '/../output_schema.json'
-        );
+        $this->validator = new Validator();
 
         $this->imagePath = __DIR__ . '/../testdata/test_image.jpg';
         $this->assertFileExists($this->imagePath, "Test image file missing.");

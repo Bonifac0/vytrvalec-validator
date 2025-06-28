@@ -7,36 +7,36 @@ class Validator
 {
     private OllamaClient $client;
     private string $errorLogPath;
-    private array $rules;
+    private array $prompts;
     private array $outputSchema;
 
     public function __construct(
-        string $credFile = "credentials.txt",
-        string $errorLogPath = "errors/errors.txt",
-        string $rulesFile = "rules.json",
-        string $outputSchemaFile = "output_schema.json"
+        string $credFile = __DIR__ . '/../resources/credentials.txt',
+        string $errorLogFile = __DIR__ . '/../errors/errors.txt',
+        string $promptsFile = __DIR__ . '/../resources/payload_prompts.json',
+        string $outputSchemaFile = __DIR__ . '/../resources/data_output_format.json'
     ) {
         $lines = file($credFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         $this->client = new OllamaClient(trim($lines[0]), [trim($lines[1]), trim($lines[2]), 'digest']);
 
-        $this->errorLogPath = $errorLogPath;
-        $this->rules = json_decode(file_get_contents($rulesFile), true);
+        $this->errorLogPath = $errorLogFile;
+        $this->prompts = json_decode(file_get_contents($promptsFile), true);
         $this->outputSchema = json_decode(file_get_contents($outputSchemaFile), true);
 
-        if (!is_dir(dirname($errorLogPath))) {
-            mkdir(dirname($errorLogPath), 0777, true);
+        if (!is_dir(dirname($errorLogFile))) {
+            mkdir(dirname($errorLogFile), 0777, true);
         }
     }
 
     public function validate(string $imgPath, int $distance, int $elevation, bool $makelogs = true, string $logDir = "logs"): array
     {
         $timestamp = date("y_m_d-H_i_s");
-        $outputPath = "$logDir/out_$timestamp.json";
+        $outputPath = "logs/out_$timestamp.json";
 
         $inferenceOut = $this->runInference($imgPath);
         if ($makelogs && $inferenceOut !== null) {
-            if (!is_dir($logDir)) {
-                mkdir($logDir, 0777, true);
+            if (!is_dir("logs")) {
+                mkdir("logs", 0777, true);
             }
             file_put_contents($outputPath, json_encode($inferenceOut, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         }
@@ -69,8 +69,8 @@ class Validator
         $payload = [
             'model' => $model,
             'messages' => [
-                ['role' => 'user', 'content' => $this->rules['rule_definition_prompt']],
-                ['role' => 'assistant', 'content' => $this->rules['assistant_prompt']],
+                ['role' => 'user', 'content' => $this->prompts['rule_definition']],
+                ['role' => 'assistant', 'content' => $this->prompts['understand']],
                 [
                     'role' => 'user',
                     'content' => "Ok. Tady máš obrázek, vyhodnoť validitu obrázku podle pravidel poté odpověz jako JSON.",
@@ -97,7 +97,7 @@ class Validator
             'messages' => [
                 [
                     'role' => 'user',
-                    'content' => $this->rules['prompt_data'],
+                    'content' => $this->prompts['data_extract'],
                     'images' => [base64_encode($image)]
                 ]
             ],
