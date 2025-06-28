@@ -17,7 +17,7 @@ class Validator
         string $outputSchemaFile = __DIR__ . '/../resources/data_output_format.json'
     ) {
         $lines = file($credFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        $this->client = new OllamaClient(trim($lines[0]), [trim($lines[1]), trim($lines[2]), 'digest']);
+        $this->client = new OllamaClient(trim($lines[0]), [trim($lines[1]), trim($lines[2])]);
 
         $this->errorLogPath = $errorLogFile;
         $this->prompts = json_decode(file_get_contents($promptsFile), true);

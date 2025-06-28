@@ -20,6 +20,7 @@ class OllamaClient
         ];
 
         if (!empty($auth)) {
+            $auth[] = 'digest';
             $options['auth'] = $auth;
         }
 
