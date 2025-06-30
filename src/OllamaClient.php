@@ -27,33 +27,37 @@ class OllamaClient
     }
 
     /**
-     * Send a generic payload to Ollama /api/chat and return the decoded response.
+     * Sends a chat payload to the Ollama /api/chat endpoint and returns the parsed JSON response.
      *
-     * @param array $payload Payload compatible with /api/chat (e.g. model, messages, stream...)
-     * @return array|null Response decoded as array, or null on error
+     * Automatically sets 'stream' to false to ensure a single full response is returned.
+     * The function assumes that the model response contains a JSON string in the 'message.content' field,
+     * which it will decode and return as an associative array.
+     *
+     * Example payload:
+     * [
+     *     'model' => 'gemma3:27b',
+     *     'messages' => [
+     *         [
+     *             'role' => 'user',
+     *             'content' => 'Co je na obrázku?',
+     *             'images' => [$image] // base64-encoded image
+     *         ]
+     *     ]
+     * ]
+     *
+     * @param array $payload Payload compatible with /api/chat (e.g. model, messages, etc.).
+     * @return array|null Parsed content returned by the assistant, or null if decoding fails.
      */
     public function chat(array $payload): array
     {
-        // payload example
-        // $payload = [
-        //     'model' => 'gemma3:27b',
-        //     'messages' => [
-        //         [
-        //             'role' => 'user',
-        //             'content' => 'Co je na obrázku?',
-        //             'images' => [$image]
-        //         ]
-        //     ],
-        //     'stream' => false
-        // ];
-
-        $payload['stream'] = false; # it respond in one
+        // Ensure response is returned in full (non-streaming)
+        $payload['stream'] = false;
 
         $response = $this->client->post('/api/chat', [
             'json' => $payload,
         ]);
-        $output = json_decode(json_decode((string) $response->getBody(), true)['message']['content'], true);
 
-        return $output;
+        $raw = json_decode((string) $response->getBody(), true);
+        return json_decode($raw['message']['content'] ?? '{}', true);
     }
 }

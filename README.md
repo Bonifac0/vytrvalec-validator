@@ -70,7 +70,9 @@ Before committing changes, please run:
 ```bash
 vendor/bin/phpunit tests
 ```
-
+## TODO
+Add fraud detection and test of it.
+Rewrite payload_prompts.json rule definition (simplify it)
 ---
 
 Written by **Bonifac0**

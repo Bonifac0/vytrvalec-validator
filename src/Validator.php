@@ -2,7 +2,6 @@
 namespace bonifac0\VytrvalecValidator;
 
 use bonifac0\OllamaClient\OllamaClient;
-use PhpParser\Builder\Method;
 
 class Validator
 {
@@ -34,6 +33,31 @@ class Validator
             mkdir(dirname($outLogFile), 0777, true);
         }
     }
+
+    /**
+     * Validates whether the activity data extracted from an image matches the declared distance and elevation.
+     *
+     * This is the main entry point to the library. It accepts an image (from a local file or URL),
+     * extracts structured activity data using AI inference, optionally logs the result, and verifies it
+     * against the user-provided distance and elevation.
+     *
+     * Error codes:
+     *  - 0 = Valid
+     *  - 1 = Image violates base activity rules
+     *  - 2 = Declared distance doesn't match extracted data
+     *  - 3 = Declared elevation doesn't match extracted data
+     *  - 4 = Inference or validation failed internally
+     *
+     * @param string $imgPath   Path or URL to the image containing activity data (e.g. a screenshot).
+     * @param int    $distance  Distance claimed by the user in meters.
+     * @param int    $elevation Elevation gain claimed by the user in meters.
+     * @param bool   $makelogs  If true, the inference output will be logged.
+     *
+     * @return array{
+     *     0: bool,   // true if valid, false otherwise
+     *     1: int     // error code (see above)
+     * }
+     */
     public function validate(string $imgPath, int $distance, int $elevation, bool $makelogs = true): array
     {
         $image = file_get_contents($imgPath);
@@ -45,6 +69,13 @@ class Validator
 
         return $this->accept($inferenceOut, $distance, $elevation, true);
     }
+
+    /**
+     * Appends an inference result to the JSON log file.
+     *
+     * @param array  $inference The result from the inference step.
+     * @param string $imgPath   Optional path or URL to the image used in validation.
+     */
     private function makeLog(array $inference, string $imgPath = ""): void
     {
         $logs = [];
@@ -73,6 +104,12 @@ class Validator
         );
     }
 
+    /**
+     * Runs rule validity check and data extraction on the given image.
+     *
+     * @param string $image Binary contents of the image.
+     * @return array Combined result from rule validation and data extraction.
+     */
     private function runInference(string $image): array
     {
         try {
@@ -93,6 +130,13 @@ class Validator
         }
     }
 
+    /**
+     * Checks whether the image satisfies the Vytrvalec rules.
+     *
+     * @param string $image Binary image data.
+     * @param string $model The model name used for rule checking (default: gemma3:27b).
+     * @return array Result containing at least the 'valid_rules' key.
+     */
     private function assessRuleValidity(string $image, string $model = "gemma3:27b"): array
     {
         $payload = [
@@ -118,6 +162,13 @@ class Validator
         return $this->client->chat($payload);
     }
 
+    /**
+     * Extracts structured activity data (e.g., distance, elevation) from the image.
+     *
+     * @param string $image Binary image data.
+     * @param string $model The model name used for data extraction.
+     * @return array Extracted data fields as defined in the output schema.
+     */
     private function extractData(string $image, string $model = "qwen2.5vl"): array
     {
         $payload = [
@@ -135,6 +186,15 @@ class Validator
         return $this->client->chat($payload);
     }
 
+    /**
+     * Verifies if extracted data matches declared distance and elevation.
+     *
+     * @param array $ins     The inference result with extracted data.
+     * @param int   $dist    Declared distance by the user.
+     * @param int   $ele     Declared elevation by the user.
+     * @param bool  $loosEle Whether to allow missing elevation data.
+     * @return array Result: [bool $isValid, int $errorCode]
+     */
     private function accept(array $ins, int $dist, int $ele, bool $loosEle = false): array
     {
         try {
@@ -155,11 +215,28 @@ class Validator
         }
     }
 
+    /**
+     * Checks whether the extracted distance is within 5% of the declared distance.
+     *
+     * @param array $ins  Inference result with extracted distance.
+     * @param int   $dist Declared distance.
+     * @return bool True if within acceptable range, false otherwise.
+     */
     private function acceptDistance(array $ins, int $dist): bool
     {
         return abs($dist - $ins['distance']) < 0.05 * $dist;
     }
 
+    /**
+     * Checks whether the extracted elevation matches the declared elevation.
+     *
+     * If elevation is zero or missing (and $loosEle is true), validation passes.
+     *
+     * @param array $ins      Inference result with extracted elevation.
+     * @param int   $ele      Declared elevation.
+     * @param bool  $loosEle  Allow null elevation if true.
+     * @return bool True if elevation is acceptable, false otherwise.
+     */
     private function acceptElevation(array $ins, int $ele, bool $loosEle): bool
     {
         if ($loosEle && $ins['elevation'] === null)
@@ -169,4 +246,3 @@ class Validator
         return $ele === $ins['elevation'];
     }
 }
-
