@@ -34,10 +34,10 @@ class Validator
             mkdir(dirname($outLogFile), 0777, true);
         }
     }
-
     public function validate(string $imgPath, int $distance, int $elevation, bool $makelogs = true): array
     {
-        $inferenceOut = $this->runInference($imgPath);
+        $image = file_get_contents($imgPath);
+        $inferenceOut = $this->runInference($image);
 
         if ($makelogs && $inferenceOut !== null) {
             $this->makeLog($inferenceOut, $imgPath);
@@ -73,10 +73,10 @@ class Validator
         );
     }
 
-    private function runInference(string $imagePath): array
+    private function runInference(string $image): array
     {
         try {
-            $ruleJson = $this->assessRuleValidity($imagePath);
+            $ruleJson = $this->assessRuleValidity($image);
             if (!$ruleJson['valid_rules']) {
                 return $ruleJson;
             }
@@ -86,16 +86,15 @@ class Validator
         }
 
         try {
-            return array_merge($ruleJson, $this->extractData($imagePath));
+            return array_merge($ruleJson, $this->extractData($image));
         } catch (\Throwable $e) {
             file_put_contents($this->errorLogPath, "Data extraction error: " . $e->getMessage() . PHP_EOL, FILE_APPEND);
             return ['valid_rules' => false,];
         }
     }
 
-    private function assessRuleValidity(string $imagePath, string $model = "gemma3:27b"): array
+    private function assessRuleValidity(string $image, string $model = "gemma3:27b"): array
     {
-        $image = file_get_contents($imagePath);
         $payload = [
             'model' => $model,
             'messages' => [
@@ -119,9 +118,8 @@ class Validator
         return $this->client->chat($payload);
     }
 
-    private function extractData(string $imagePath, string $model = "qwen2.5vl"): array
+    private function extractData(string $image, string $model = "qwen2.5vl"): array
     {
-        $image = file_get_contents($imagePath);
         $payload = [
             'model' => $model,
             'messages' => [

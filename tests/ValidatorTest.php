@@ -8,6 +8,7 @@ class ValidatorTest extends TestCase
     private Validator $validator;
     private string $imagePathGood;
     private string $imagePathFish;
+    private string $imgFile;
 
 
     protected function setUp(): void
@@ -19,6 +20,9 @@ class ValidatorTest extends TestCase
 
         $this->imagePathFish = __DIR__ . '/../testdata/fish.jpg';
         $this->assertFileExists($this->imagePathFish, "Fish image file missing.");
+
+        $this->imgFile = file_get_contents($this->imagePathGood);
+
     }
 
     public function testFullValidationAccept()
@@ -35,6 +39,17 @@ class ValidatorTest extends TestCase
         $this->assertTrue($isValid);
         $this->assertEquals(0, $errorCode);
     }
+    public function testFullValidationFromURL()
+    {
+        [$isValid, $errorCode] = $this->validator->validate(
+            "https://vytrvalec.kts.zcu.cz/uploads/6626743e121af5.10397810.jpg",
+            distance: 15820,
+            elevation: 128,
+            makelogs: false
+        );
+
+        $this->assertEquals(0, $errorCode);
+    }
 
     public function testValidationRejectCodes()
     {
@@ -47,7 +62,7 @@ class ValidatorTest extends TestCase
         $this->assertFalse($isValid);
         $this->assertEquals(1, $errorCode);
 
-        $inference = $this->invokePrivateMethod($this->validator, 'runInference', [$this->imagePathGood]);
+        $inference = $this->invokePrivateMethod($this->validator, 'runInference', [$this->imgFile]);
 
         [$isValid, $errorCode] = $this->invokePrivateMethod($this->validator, 'accept', [$inference, 4200, 110]);
         $this->assertFalse($isValid);
@@ -60,7 +75,7 @@ class ValidatorTest extends TestCase
 
     public function testRunInferenceReturnsValidStructure()
     {
-        $data = $this->invokePrivateMethod($this->validator, 'runInference', [$this->imagePathGood]);
+        $data = $this->invokePrivateMethod($this->validator, 'runInference', [$this->imgFile]);
 
         $this->assertIsArray($data);
         $this->assertArrayHasKey('valid_rules', $data);
@@ -74,7 +89,7 @@ class ValidatorTest extends TestCase
 
     public function testExtractDataReturnsFields()
     {
-        $data = $this->invokePrivateMethod($this->validator, 'extractData', [$this->imagePathGood]);
+        $data = $this->invokePrivateMethod($this->validator, 'extractData', [$this->imgFile]);
 
         $this->assertIsArray($data);
         $this->assertArrayHasKey('distance', $data);
