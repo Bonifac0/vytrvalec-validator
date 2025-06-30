@@ -6,3 +6,5 @@
 /.idea/                export-ignore
 composer.lock          export-ignore
 phpunit.xml            export-ignore
+pokus.php
+/testresources/

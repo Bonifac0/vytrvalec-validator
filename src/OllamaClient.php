@@ -2,7 +2,6 @@
 namespace bonifac0\OllamaClient;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
 
 class OllamaClient
 {
