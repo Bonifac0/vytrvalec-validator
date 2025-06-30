@@ -2,17 +2,20 @@
 namespace bonifac0\VytrvalecValidator;
 
 use bonifac0\OllamaClient\OllamaClient;
+use PhpParser\Builder\Method;
 
 class Validator
 {
     private OllamaClient $client;
     private string $errorLogPath;
+    private string $outLogPath;
     private array $prompts;
     private array $outputSchema;
 
     public function __construct(
         string $credFile = __DIR__ . '/../resources/credentials.txt',
         string $errorLogFile = __DIR__ . '/../errors/errors.txt',
+        string $outLogFile = __DIR__ . '/../logs/validationLogs.json',
         string $promptsFile = __DIR__ . '/../resources/payload_prompts.json',
         string $outputSchemaFile = __DIR__ . '/../resources/data_output_format.json'
     ) {
@@ -20,27 +23,54 @@ class Validator
         $this->client = new OllamaClient(trim($lines[0]), [trim($lines[1]), trim($lines[2])]);
 
         $this->errorLogPath = $errorLogFile;
+        $this->outLogPath = $outLogFile;
         $this->prompts = json_decode(file_get_contents($promptsFile), true);
         $this->outputSchema = json_decode(file_get_contents($outputSchemaFile), true);
 
         if (!is_dir(dirname($errorLogFile))) {
             mkdir(dirname($errorLogFile), 0777, true);
         }
+        if (!is_dir(dirname($outLogFile))) {
+            mkdir(dirname($outLogFile), 0777, true);
+        }
     }
 
-    public function validate(string $imgPath, int $distance, int $elevation, bool $makelogs = true, string $logDir = "logs"): array
+    public function validate(string $imgPath, int $distance, int $elevation, bool $makelogs = true): array
     {
-        $timestamp = date("y_m_d-H_i_s");
-        $outputPath = "logs/out_$timestamp.json";
-
         $inferenceOut = $this->runInference($imgPath);
+
         if ($makelogs && $inferenceOut !== null) {
-            if (!is_dir("logs")) {
-                mkdir("logs", 0777, true);
-            }
-            file_put_contents($outputPath, json_encode($inferenceOut, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            $this->makeLog($inferenceOut, $imgPath);
         }
+
         return $this->accept($inferenceOut, $distance, $elevation, true);
+    }
+    private function makeLog(array $inference, string $imgPath = ""): void
+    {
+        $logs = [];
+
+        if (file_exists($this->outLogPath)) {
+            $existing = file_get_contents($this->outLogPath);
+            $decoded = json_decode($existing, true);
+            if (is_array($decoded)) {
+                $logs = $decoded;
+            }
+        }
+
+        $logEntry = [
+            "time" => date("y_m_d-H_i_s"),
+            "content" => $inference
+        ];
+        if ($imgPath !== "") {
+            $logEntry["image"] = $imgPath;
+        }
+
+        $logs[] = [$logEntry];
+
+        file_put_contents(
+            $this->outLogPath,
+            json_encode($logs, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+        );
     }
 
     private function runInference(string $imagePath): array

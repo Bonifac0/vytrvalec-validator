@@ -11,7 +11,7 @@ $validator = new Validator();
 //     __DIR__ . '/resources/data_output_format.json'
 // );
 
-$imagePath = __DIR__ . '/testdata/test_image.jpg';
+$imagePath = __DIR__ . '/testdata/test_image_good.jpg';
 
 
 [$resp, $code] = $validator->validate(
@@ -20,8 +20,12 @@ $imagePath = __DIR__ . '/testdata/test_image.jpg';
     elevation: 110,
     makelogs: true
 );
-echo "resp ";
-echo $resp + 1;
-echo "\n";
+echo "resp: ";
+if ($resp) {
+    echo "succes";
+} else {
+    echo "fail";
+}
+echo "\ncode: ";
 echo $code;
 echo "\n";

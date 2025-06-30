@@ -12,7 +12,6 @@ class ValidatorTest extends TestCase
 
     protected function setUp(): void
     {
-        echo "this will take 2-3 minutes";
         $this->validator = new Validator();
 
         $this->imagePathGood = __DIR__ . '/../testdata/test_image_good.jpg';
