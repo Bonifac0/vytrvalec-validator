@@ -1,6 +1,7 @@
 {
   "name": "bonifac0/vytrvalec-validator",
   "description": "PHP library containing LLM validator.",
+  "version": "1.0.0",
   "type": "library",
   "autoload": {
     "psr-4": {
