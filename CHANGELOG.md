@@ -15,9 +15,13 @@ hint how to make changelogs: https://keepachangelog.com/en/1.0.0/
 - Add fraud detection and test of it.
 - Rewrite payload_prompts.json rule definition (simplify it)
 - Add option for user to deside loos elevation
+- Make error logs better
+- Make output logs better
 
 ## [Unreleased] 
 <!---for documenting not jet tagged chages--->
+<!---if new version is made, change: readme:24, composer.json:4--->
+
 
 ### Added
 - Placeholder for upcoming changes.

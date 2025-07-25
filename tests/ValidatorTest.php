@@ -42,7 +42,7 @@ class ValidatorTest extends TestCase
     public function testFullValidationFromURL()
     {
         [$isValid, $errorCode] = $this->validator->validate(
-            "https://vytrvalec.kts.zcu.cz/uploads/6626743e121af5.10397810.jpg",
+            "https://vytrvalec.uts.zcu.cz/uploads/6626743e121af5.10397810.jpg",
             distance: 15820,
             elevation: 128,
             makelogs: false
