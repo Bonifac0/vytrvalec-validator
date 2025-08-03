@@ -26,6 +26,8 @@ hint how to make changelogs: https://keepachangelog.com/en/1.0.0/
 ### Added
 - Placeholder for upcoming changes.
 
+### Changed
+- LoosElevation can be set when calling `validate` function.
 
 
 ## [1.0.0] – 2025-07-21

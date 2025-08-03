@@ -51,6 +51,7 @@ class Validator
      * @param string $imgPath   Path or URL to the image containing activity data (e.g. a screenshot).
      * @param int    $distance  Distance claimed by the user in meters.
      * @param int    $elevation Elevation gain claimed by the user in meters.
+     * @param bool   $loosElevation If true, accept even when elevation is not on image, but user state it.
      * @param bool   $makelogs  If true, the inference output will be logged.
      *
      * @return array{
@@ -58,7 +59,7 @@ class Validator
      *     1: int     // error code (see above)
      * }
      */
-    public function validate(string $imgPath, int $distance, int $elevation, bool $makelogs = true): array
+    public function validate(string $imgPath, int $distance, int $elevation, bool $loosElevation = true, bool $makelogs = true): array
     {
         $image = file_get_contents($imgPath);
         $inferenceOut = $this->runInference($image);
@@ -67,7 +68,7 @@ class Validator
             $this->makeLog($inferenceOut, $imgPath);
         }
 
-        return $this->accept($inferenceOut, $distance, $elevation, true);
+        return $this->accept($inferenceOut, $distance, $elevation, $loosElevation);
     }
 
     /**

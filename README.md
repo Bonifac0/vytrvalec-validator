@@ -44,11 +44,12 @@ $validator = new Validator();
     $imagePath,
     distance: 7900,
     elevation: 110,
+    loosElevation: true,
     makelogs: false
 );
 ```
 
-The `validate()` function takes the path to an image and user-provided `distance` and `elevation`.
+The `validate()` function takes the path to an image and user-provided `distance` and `elevation`. Optionally, `loosElevation` make the validator accept when user state elevation but its not on screenshot and `makelogs` make logs about inference.
 
 It returns:
 

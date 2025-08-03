@@ -18,6 +18,7 @@ $imagePath = __DIR__ . '/testdata/test_image_good.jpg';
     $imagePath,
     distance: 7900,
     elevation: 110,
+    loosElevation: true,
     makelogs: true
 );
 echo "resp: ";
